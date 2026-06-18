@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Edit the reusable day rhythm: add/remove/reorder focus sets and named breaks.
-/// Styled to echo the Plan timeline — focus cards show a tomato preview, break
-/// cards use the warm ribbon tone.
+/// Edit the reusable day rhythm. Styled to match the rest of the app: warm
+/// canvas, the same eyebrow + rounded-title header, the shared card surface for
+/// focus sets, and the warm ribbon tone for breaks — soft and borderless.
 struct TemplateEditorView: View {
     @Binding var template: [TemplateSegment]
     @Environment(\.dismiss) private var dismiss
@@ -16,60 +16,86 @@ struct TemplateEditorView: View {
     ]
 
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            header
+
             List {
                 Section {
                     ForEach($template) { $segment in
                         row($segment)
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: Theme.Spacing.xs, leading: Theme.Spacing.lg,
+                                                      bottom: Theme.Spacing.xs, trailing: Theme.Spacing.lg))
                     }
                     .onDelete { template.remove(atOffsets: $0) }
                     .onMove { template.move(fromOffsets: $0, toOffset: $1) }
                 } footer: {
-                    Text("Tasks flow into the focus tomatoes in order; breaks fall where you place them. Drag to reorder, swipe to delete.")
-                        .font(.caption).foregroundStyle(.secondary)
-                        .padding(.top, Theme.Spacing.xs)
+                    footer
+                        .listRowInsets(EdgeInsets(top: Theme.Spacing.sm, leading: Theme.Spacing.lg,
+                                                  bottom: Theme.Spacing.xl, trailing: Theme.Spacing.lg))
                 }
-
-                Section {
-                    HStack(spacing: Theme.Spacing.sm) {
-                        Button { withAnimation(Theme.Motion.quick) { template.append(.focus(4)) } } label: {
-                            Label("Focus set", systemImage: "plus")
-                        }
-                        .buttonStyle(SoftPillButtonStyle(tint: Theme.Palette.focus))
-
-                        Button { withAnimation(Theme.Motion.quick) { template.append(.rest("Break", 15, "cup.and.saucer.fill")) } } label: {
-                            Label("Break", systemImage: "plus")
-                        }
-                        .buttonStyle(SoftPillButtonStyle(tint: Theme.Palette.breakColor))
-                        Spacer()
-                    }
-                    Button(role: .destructive) {
-                        withAnimation(Theme.Motion.quick) { template = TemplateStore.defaultSegments }
-                    } label: {
-                        Label("Reset to default rhythm", systemImage: "arrow.counterclockwise")
-                            .font(.subheadline)
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
-                    .padding(.top, Theme.Spacing.xs)
-                }
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .warmCanvas()
-            .navigationTitle("Edit your rhythm")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }.fontWeight(.semibold)
-                }
-            }
+            .environment(\.defaultMinListRowHeight, 0)
         }
-        .frame(minWidth: 460, minHeight: 560)
+        .frame(width: 480, height: 600)
+        .warmCanvas()
     }
+
+    // MARK: Header
+
+    private var header: some View {
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("EDIT YOUR RHYTHM")
+                    .font(.caption2.weight(.bold)).tracking(2)
+                    .foregroundStyle(Theme.Palette.focus.opacity(0.75))
+                Text("Shape your day")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+            }
+            Spacer()
+            Button("Done") { dismiss() }
+                .buttonStyle(SoftPillButtonStyle(tint: Theme.Palette.accent))
+        }
+        .padding(.horizontal, Theme.Spacing.lg)
+        .padding(.top, Theme.Spacing.lg)
+        .padding(.bottom, Theme.Spacing.sm)
+    }
+
+    // MARK: Footer (add / reset / hint)
+
+    private var footer: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            HStack(spacing: Theme.Spacing.sm) {
+                Button { withAnimation(Theme.Motion.quick) { template.append(.focus(4)) } } label: {
+                    Label("Focus set", systemImage: "plus")
+                }
+                .buttonStyle(SoftPillButtonStyle(tint: Theme.Palette.focus))
+
+                Button { withAnimation(Theme.Motion.quick) { template.append(.rest("Break", 15, "cup.and.saucer.fill")) } } label: {
+                    Label("Break", systemImage: "plus")
+                }
+                .buttonStyle(SoftPillButtonStyle(tint: Theme.Palette.breakColor))
+                Spacer()
+            }
+
+            Button(role: .destructive) {
+                withAnimation(Theme.Motion.quick) { template = TemplateStore.defaultSegments }
+            } label: {
+                Label("Reset to default rhythm", systemImage: "arrow.counterclockwise").font(.subheadline)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+
+            Text("Tasks flow into the focus tomatoes in order; breaks fall where you place them. Drag to reorder, swipe to delete.")
+                .font(.caption).foregroundStyle(.secondary)
+                .padding(.top, Theme.Spacing.xxs)
+        }
+    }
+
+    // MARK: Rows
 
     @ViewBuilder private func row(_ segment: Binding<TemplateSegment>) -> some View {
         if segment.wrappedValue.kind == .focus {
@@ -99,7 +125,6 @@ struct TemplateEditorView: View {
         }
         .padding(Theme.Spacing.md)
         .card()
-        .padding(.vertical, Theme.Spacing.xxs)
     }
 
     private func breakRow(_ segment: Binding<TemplateSegment>) -> some View {
@@ -123,7 +148,6 @@ struct TemplateEditorView: View {
         }
         .padding(Theme.Spacing.md)
         .background(Theme.Palette.ribbonWarm, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
-        .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).strokeBorder(Theme.Palette.breakColor.opacity(0.18)))
-        .padding(.vertical, Theme.Spacing.xxs)
+        .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
     }
 }

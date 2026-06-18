@@ -16,15 +16,12 @@ struct WarmCanvas: ViewModifier {
 }
 
 /// An elevated, softly-shadowed card surface that pops on the warm canvas.
+/// Borderless — separation comes from a soft shadow, not a hard edge.
 struct CardSurface: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.Radius.md)
-                    .strokeBorder(.white.opacity(0.10))
-            )
-            .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
+            .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
     }
 }
 
