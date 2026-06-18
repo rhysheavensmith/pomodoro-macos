@@ -154,8 +154,7 @@ struct PlanView: View {
         Button { editingRhythm = true } label: {
             Label("Edit rhythm", systemImage: "slider.horizontal.3")
         }
-        .buttonStyle(.bordered)
-        .controlSize(.small)
+        .buttonStyle(SoftPillButtonStyle(tint: Theme.Palette.focus))
         .padding(.top, Theme.Spacing.xs)
     }
 

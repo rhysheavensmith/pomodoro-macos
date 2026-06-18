@@ -33,6 +33,25 @@ extension View {
     func card() -> some View { modifier(CardSurface()) }
 }
 
+/// A warm, on-brand pill button with press feedback — for secondary actions
+/// (Edit rhythm, Add focus set, Add break) that should feel part of the design,
+/// not a stock system button.
+struct SoftPillButtonStyle: ButtonStyle {
+    var tint: Color = Theme.Palette.focus
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(tint)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.xs + 2)
+            .background(Capsule().fill(tint.opacity(0.12)))
+            .overlay(Capsule().strokeBorder(tint.opacity(0.20)))
+            .contentShape(Capsule())
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+}
+
 /// Consistent screen header: bold tracked eyebrow + oversized rounded title.
 struct ScreenHeader: View {
     let eyebrow: String

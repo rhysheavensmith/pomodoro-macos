@@ -15,12 +15,13 @@ struct SettingsView: View {
 
     var body: some View {
         @Bindable var settings = app.settings
-        VStack(alignment: .leading, spacing: 0) {
-            ScreenHeader(eyebrow: "PREFERENCES", title: "Settings")
-                .padding([.horizontal, .top], Theme.Spacing.xl)
-                .padding(.bottom, Theme.Spacing.sm)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Form {
+        Form {
+            Section {
+                ScreenHeader(eyebrow: "PREFERENCES", title: "Settings")
+                    .padding(.vertical, Theme.Spacing.xs)
+            }
+            .listRowBackground(Color.clear)
+
             Section("General") {
                 Toggle("Launch at login", isOn: Binding(
                     get: { launchAtLogin },
@@ -94,9 +95,8 @@ struct SettingsView: View {
                 }
             }
         }
-            .formStyle(.grouped)
-            .scrollContentBackground(.hidden)
-        }
+        .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
         .warmCanvas()
         .onAppear { if installedApps.isEmpty { installedApps = InstalledApps.all() } }
     }
