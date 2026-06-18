@@ -23,6 +23,16 @@ xcodebuild ... test -only-testing:PomodoroFocusTests/StreakServiceTests/testClea
 
 There is no separate linter. Builds are local/unsigned (`CODE_SIGN_IDENTITY: "-"`), so no Developer Team is required.
 
+### Installing / updating the app in `/Applications`
+
+The app launched day-to-day is whatever `.app` is **installed** (e.g. `/Applications/Pomodoro Focus.app`, named from `CFBundleDisplayName`, with a space). That installed copy is a **build artifact** — a `git pull` or a source rebuild does **not** update it, so you'll keep launching a stale binary that's missing recently-merged features (this is the #1 "feature isn't showing up" cause). Rebuild and re-copy with the helper:
+
+```sh
+./install.sh   # xcodegen generate → build Release → replace /Applications/Pomodoro Focus.app
+```
+
+When diagnosing "the app doesn't have feature X," first check the installed binary's build date (`stat -f '%Sm' "/Applications/Pomodoro Focus.app/Contents/MacOS/PomodoroFocus"`) against when X merged — don't trust `strings` to detect Swift string literals (it under-reports). Note also there can be multiple DerivedData dirs (one per worktree), so `find … | head -1` may grab the wrong build.
+
 ## Architecture
 
 Layered, with **`AppModel` (`PomodoroFocus/App/AppModel.swift`) as the single coordinator and dependency root**. There is no DI container or protocols: `AppModel` is a `@MainActor @Observable` instantiated once as App-scoped `@State`, injected everywhere via `@Environment(AppModel.self)`. It owns the engines as plain `let`s, holds the lone SwiftData `ModelContext`, is the **only writer** to the store, and is the only place orchestration/policy lives.
