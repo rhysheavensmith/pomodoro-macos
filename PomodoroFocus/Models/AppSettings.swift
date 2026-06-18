@@ -20,9 +20,9 @@ final class AppSettings {
     /// Whether the evening "streak at risk" nudge is enabled.
     var streakRiskNudgeEnabled: Bool
     /// Whether the evening "reflect on your day" journal reminder is enabled.
-    var journalReminderEnabled: Bool
+    var journalReminderEnabled: Bool = true
     /// Minutes from midnight for the journal reminder (1260 = 21:00).
-    var journalReminderMinutes: Int
+    var journalReminderMinutes: Int = 21 * 60
 
     // MARK: Streak rules
     /// Minimum completed pomodoros for a day to "qualify" toward the streak.
