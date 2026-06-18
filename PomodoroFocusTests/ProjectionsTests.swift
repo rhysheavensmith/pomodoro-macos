@@ -73,4 +73,18 @@ final class ProjectionsTests: XCTestCase {
         XCTAssertTrue(stats.allSatisfy { $0.count == 1 })
         XCTAssertEqual(stats.filter { $0.appName == "Slack" }.count, 2)
     }
+
+    func testJournalEntriesMapsDayFields() {
+        let day = Day(date: at(2026, 6, 17))
+        day.journalWentWell = "shipped the plan"
+        day.journalGotInWay = nil
+        day.journalTomorrowFocus = "review"
+
+        let entries = Projections.journalEntries(from: [day])
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries[0].date, at(2026, 6, 17))
+        XCTAssertEqual(entries[0].wentWell, "shipped the plan")
+        XCTAssertNil(entries[0].gotInWay)
+        XCTAssertEqual(entries[0].tomorrowFocus, "review")
+    }
 }

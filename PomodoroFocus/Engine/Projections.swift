@@ -37,4 +37,15 @@ enum Projections {
     static func distractionStats(from events: [DistractionEvent]) -> [DistractionStat] {
         events.map { DistractionStat(appName: $0.appName, count: 1) }
     }
+
+    static func journalEntries(from days: [Day]) -> [JournalEntryInput] {
+        days.map {
+            JournalEntryInput(
+                date: $0.date,
+                wentWell: $0.journalWentWell,
+                gotInWay: $0.journalGotInWay,
+                tomorrowFocus: $0.journalTomorrowFocus
+            )
+        }
+    }
 }
