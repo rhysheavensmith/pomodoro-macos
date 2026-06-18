@@ -101,6 +101,37 @@ final class AppModel {
         try? modelContext?.save()
     }
 
+    // MARK: - Journal
+
+    /// Load a day's stored reflection into an editable draft.
+    func journalDraft(for day: Day) -> JournalDraft {
+        JournalDraft(
+            wentWell: day.journalWentWell ?? "",
+            gotInWay: day.journalGotInWay ?? "",
+            tomorrowFocus: day.journalTomorrowFocus ?? ""
+        )
+    }
+
+    /// Persist a draft onto a day. Normalizes blanks to nil and stamps
+    /// `journaledAt` on the first non-empty save.
+    func saveJournal(for day: Day, draft: JournalDraft) {
+        guard let ctx = modelContext else { return }
+        day.journalWentWell = JournalLogic.normalize(draft.wentWell)
+        day.journalGotInWay = JournalLogic.normalize(draft.gotInWay)
+        day.journalTomorrowFocus = JournalLogic.normalize(draft.tomorrowFocus)
+        if day.journaledAt == nil && !JournalLogic.isEmpty(draft) {
+            day.journaledAt = Date()
+        }
+        try? ctx.save()
+    }
+
+    /// Fetch the persisted Day for a given calendar date (for editing history).
+    func day(on date: Date) -> Day? {
+        guard let ctx = modelContext else { return nil }
+        let start = Calendar.current.startOfDay(for: date)
+        return try? ctx.fetch(FetchDescriptor<Day>(predicate: #Predicate { $0.date == start })).first
+    }
+
     func setAllocation(_ task: TaskItem, to value: Int) {
         task.plannedPomodoros = max(1, value)
         try? modelContext?.save()
