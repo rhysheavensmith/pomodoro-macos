@@ -97,7 +97,7 @@ struct PlanView: View {
             Image(systemName: "target").foregroundStyle(Theme.Palette.accent)
             TextField("Today's intention…", text: $intention)
                 .textFieldStyle(.plain)
-                .onSubmit { app.setIntention(intention) }
+                .onChange(of: intention) { app.setIntention(intention) }
         }
         .padding(Theme.Spacing.sm)
         .background(.background.opacity(0.6), in: RoundedRectangle(cornerRadius: Theme.Radius.sm))

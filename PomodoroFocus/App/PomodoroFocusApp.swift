@@ -3,6 +3,7 @@ import SwiftData
 
 @main
 struct PomodoroFocusApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var app = AppModel()
 
     /// One shared SwiftData store for the whole app.

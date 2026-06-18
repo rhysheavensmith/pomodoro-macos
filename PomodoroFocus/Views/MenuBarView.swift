@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import AppKit
+import Combine
 
 /// The label rendered *in the menu bar*: live countdown while active, else a
 /// calm timer glyph. The label view is created at launch, so it's also where we
@@ -20,6 +21,10 @@ struct MenuBarLabel: View {
                     openWindow(id: WindowID.main)
                     NSApp.activate(ignoringOtherApps: true)
                 }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .pfReopenMainWindow)) { _ in
+                openWindow(id: WindowID.main)
+                NSApp.activate(ignoringOtherApps: true)
             }
     }
 
