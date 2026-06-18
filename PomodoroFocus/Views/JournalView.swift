@@ -12,6 +12,10 @@ struct JournalView: View {
     @State private var todayIntention: String?
     @State private var loaded = false
     @State private var editingDate: Date?
+    @State private var searchText = ""
+    @State private var showAllHistory = false
+
+    private let historyPageSize = 3
 
     var body: some View {
         ScrollView {
@@ -25,11 +29,22 @@ struct JournalView: View {
             .frame(maxWidth: .infinity)
         }
         .warmCanvas()
-        .onAppear(perform: loadToday)
+        .onAppear {
+            loadToday()
+            collapseHistory()   // always return to the default 3 when the tab is shown
+        }
+        .onDisappear(perform: collapseHistory)   // and collapse when leaving for another tab
         .sheet(item: $editingDate) { date in
             JournalEntryEditor(date: date)
                 .environment(app)
         }
+    }
+
+    /// Reset the history list to its default state (collapsed to the most recent
+    /// few, search cleared) — e.g. when switching away from the Journal tab.
+    private func collapseHistory() {
+        showAllHistory = false
+        searchText = ""
     }
 
     // MARK: Header
@@ -122,21 +137,121 @@ struct JournalView: View {
             .filter { $0.date != todayStart }
     }
 
+    private var isSearching: Bool {
+        !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var filteredHistory: [JournalEntrySummary] {
+        JournalLogic.search(history, matching: searchText)
+    }
+
     @ViewBuilder private var historySection: some View {
-        if history.isEmpty {
-            historyEmptyState
-        } else {
+        if !history.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("PAST ENTRIES")
-                    .font(.caption.weight(.bold))
-                    .tracking(2)
-                    .foregroundStyle(Theme.Palette.focus.opacity(0.75))
-                ForEach(history) { entry in
+                HStack(alignment: .firstTextBaseline) {
+                    Text("PAST ENTRIES")
+                        .font(.caption.weight(.bold))
+                        .tracking(2)
+                        .foregroundStyle(Theme.Palette.focus.opacity(0.75))
+                    Spacer()
+                    Text("\(history.count)")
+                        .font(.caption.weight(.medium).monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel("\(history.count) past entries")
+                }
+                if history.count > historyPageSize { searchField }
+                historyResults
+            }
+        } else if capturedCount > 0 {
+            // Today is written but there are no past days yet — reassure that it's
+            // saved rather than showing the "nothing here" empty state.
+            savedTodayState
+        } else {
+            historyEmptyState
+        }
+    }
+
+    @ViewBuilder private var historyResults: some View {
+        let results = filteredHistory
+        if results.isEmpty {
+            noSearchResults
+        } else {
+            // Default to the 3 most recent; searching or "Show all" reveals the rest.
+            let shown = (isSearching || showAllHistory) ? results : Array(results.prefix(historyPageSize))
+            LazyVStack(spacing: Theme.Spacing.sm) {
+                ForEach(shown) { entry in
                     Button { editingDate = entry.date } label: { historyRow(entry) }
                         .buttonStyle(JournalRowButtonStyle(reduceMotion: reduceMotion))
                 }
             }
+            if !isSearching && results.count > historyPageSize {
+                Button {
+                    withAnimation(reduceMotion ? nil : Theme.Motion.gentle) { showAllHistory.toggle() }
+                } label: {
+                    Label(showAllHistory ? "Show fewer" : "Show all \(results.count) entries",
+                          systemImage: showAllHistory ? "chevron.up" : "chevron.down")
+                }
+                .buttonStyle(SoftPillButtonStyle(tint: Theme.Palette.focus))
+                .padding(.top, Theme.Spacing.xxs)
+            }
         }
+    }
+
+    private var searchField: some View {
+        HStack(spacing: Theme.Spacing.xs) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            TextField("Search reflections", text: $searchText)
+                .textFieldStyle(.plain)
+            if !searchText.isEmpty {
+                Button { searchText = "" } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear search")
+            }
+        }
+        .padding(.horizontal, Theme.Spacing.sm)
+        .padding(.vertical, Theme.Spacing.xs)
+        .background(.background.opacity(0.55), in: RoundedRectangle(cornerRadius: Theme.Radius.sm))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Radius.sm).strokeBorder(.quaternary))
+    }
+
+    private var noSearchResults: some View {
+        VStack(spacing: Theme.Spacing.xs) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 26))
+                .foregroundStyle(.secondary.opacity(0.5))
+                .accessibilityHidden(true)
+            Text("No reflections match \u{201C}\(searchText.trimmingCharacters(in: .whitespacesAndNewlines))\u{201D}")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Theme.Spacing.lg)
+    }
+
+    private var savedTodayState: some View {
+        VStack(spacing: Theme.Spacing.sm) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 32, weight: .regular))
+                .foregroundStyle(Theme.Palette.accent.opacity(0.85))
+                .accessibilityHidden(true)
+            Text("Today's reflection is saved")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text("Your past days will gather here as you keep journaling.")
+                .font(Theme.Typography.insightCaption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 320)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Theme.Spacing.xl)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Today's reflection is saved. Your past days will gather here as you keep journaling.")
     }
 
     private var historyEmptyState: some View {

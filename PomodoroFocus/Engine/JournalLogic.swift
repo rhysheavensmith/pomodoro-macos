@@ -77,4 +77,16 @@ enum JournalLogic {
         guard collapsed.count > limit else { return collapsed }
         return String(collapsed.prefix(limit)).trimmingCharacters(in: .whitespaces) + "…"
     }
+
+    /// Case-insensitive substring search across the three prompts. A blank query
+    /// returns all entries unchanged; results preserve the input order.
+    static func search(_ entries: [JournalEntrySummary], matching query: String) -> [JournalEntrySummary] {
+        let needle = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !needle.isEmpty else { return entries }
+        return entries.filter { entry in
+            [entry.wentWell, entry.gotInWay, entry.tomorrowFocus]
+                .compactMap { $0?.lowercased() }
+                .contains { $0.contains(needle) }
+        }
+    }
 }

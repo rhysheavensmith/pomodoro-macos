@@ -61,4 +61,34 @@ final class JournalLogicTests: XCTestCase {
         XCTAssertTrue(preview.hasSuffix("…"))
         XCTAssertEqual(preview.count, 81)                // 80 chars + ellipsis
     }
+
+    // MARK: - Search
+
+    private var searchFixture: [JournalEntrySummary] {
+        JournalLogic.summaries(from: [
+            JournalEntryInput(date: at(2026, 6, 17), wentWell: "Gym and API refactor", gotInWay: nil, tomorrowFocus: nil),
+            JournalEntryInput(date: at(2026, 6, 16), wentWell: "Quiet morning", gotInWay: "Slack pulled me away", tomorrowFocus: nil),
+            JournalEntryInput(date: at(2026, 6, 15), wentWell: "Shipped feature", gotInWay: nil, tomorrowFocus: "Plan the sprint"),
+        ])
+    }
+
+    func testSearchBlankQueryReturnsAll() {
+        XCTAssertEqual(JournalLogic.search(searchFixture, matching: "").count, 3)
+        XCTAssertEqual(JournalLogic.search(searchFixture, matching: "   ").count, 3)
+    }
+
+    func testSearchMatchesAcrossFieldsCaseInsensitively() {
+        XCTAssertEqual(JournalLogic.search(searchFixture, matching: "gym").map(\.date), [at(2026, 6, 17)])
+        XCTAssertEqual(JournalLogic.search(searchFixture, matching: "SLACK").map(\.date), [at(2026, 6, 16)]) // gotInWay
+        XCTAssertEqual(JournalLogic.search(searchFixture, matching: "sprint").map(\.date), [at(2026, 6, 15)]) // tomorrowFocus
+    }
+
+    func testSearchNoMatchEmptyAndOrderPreserved() {
+        XCTAssertTrue(JournalLogic.search(searchFixture, matching: "zzz").isEmpty)
+        // "a" appears in all three; results keep the date-descending input order
+        XCTAssertEqual(
+            JournalLogic.search(searchFixture, matching: "a").map(\.date),
+            [at(2026, 6, 17), at(2026, 6, 16), at(2026, 6, 15)]
+        )
+    }
 }
