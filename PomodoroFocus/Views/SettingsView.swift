@@ -27,14 +27,15 @@ struct SettingsView: View {
                     set: { launchAtLogin = $0; LoginItem.setEnabled($0) }
                 ))
             }
-            Section("Timer") {
+            Section {
                 Stepper("Focus: \(settings.workMins) min", value: $settings.workMins, in: 1...60)
                 Stepper("Short break: \(settings.shortBreakMins) min", value: $settings.shortBreakMins, in: 1...30)
-                Stepper("Long break: \(settings.longBreakMins) min", value: $settings.longBreakMins, in: 1...60)
-                Stepper("Long break every \(settings.longBreakEvery) pomodoros",
-                        value: $settings.longBreakEvery, in: 2...8)
                 Stepper(dailyGoalLabel, value: dailyGoalBinding, in: 0...20)
                 Toggle("Auto-start breaks", isOn: $autoStartBreaks)
+            } header: {
+                Text("Timer")
+            } footer: {
+                Text("Coffee, lunch and walk breaks are part of your day rhythm — edit them in Plan → Edit rhythm.")
             }
 
             Section("Alerts") {

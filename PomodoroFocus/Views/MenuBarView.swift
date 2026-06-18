@@ -58,6 +58,10 @@ struct MenuBarView: View {
         todays.reduce(0) { $0 + $1.completedPomodoros }
     }
 
+    private var namedBreaks: [TemplateSegment] {
+        TemplateStore.load().filter { $0.kind == .rest }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             header
@@ -144,7 +148,11 @@ struct MenuBarView: View {
 
                 Menu {
                     Button("Short break · \(app.settings.shortBreakMins) min") { app.startShortBreak() }
-                    Button("Long break · \(app.settings.longBreakMins) min") { app.startLongBreak() }
+                    ForEach(namedBreaks) { seg in
+                        Button("\(seg.name) · \(seg.minutes) min") {
+                            app.startNamedBreak(name: seg.name, minutes: seg.minutes)
+                        }
+                    }
                 } label: {
                     Label("Break", systemImage: "cup.and.saucer")
                 }

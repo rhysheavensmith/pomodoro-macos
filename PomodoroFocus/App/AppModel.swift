@@ -175,6 +175,13 @@ final class AppModel {
         timer.startBreak(isLong: true, durationSeconds: Int(settings.longBreakSeconds))
     }
 
+    /// Start one of the template's named breaks (Coffee/Lunch/Walk) on demand.
+    func startNamedBreak(name: String, minutes: Int) {
+        endFocusUI()
+        currentBreakName = name
+        timer.startBreak(isLong: true, durationSeconds: max(60, minutes * 60))
+    }
+
     /// The task a "start next" action should pick: first unfinished, else first.
     func nextUnfinishedTask() -> TaskItem? {
         let tasks = todaysTasks()
