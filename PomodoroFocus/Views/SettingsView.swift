@@ -45,6 +45,11 @@ struct SettingsView: View {
                 Toggle("Completion sound", isOn: $completionSoundEnabled)
                 Toggle("Evening \u{201C}streak at risk\u{201D} nudge", isOn: $settings.streakRiskNudgeEnabled)
                     .onChange(of: settings.streakRiskNudgeEnabled) { app.applySettings() }
+                Toggle("Evening journal reminder", isOn: $settings.journalReminderEnabled)
+                    .onChange(of: settings.journalReminderEnabled) { app.applySettings() }
+                DatePicker("Journal reminder time", selection: journalReminderBinding,
+                           displayedComponents: .hourAndMinute)
+                    .disabled(!settings.journalReminderEnabled)
             }
 
             Section("Streak") {
@@ -133,6 +138,20 @@ struct SettingsView: View {
             set: { newDate in
                 let comp = Calendar.current.dateComponents([.hour, .minute], from: newDate)
                 app.settings.planReminderMinutes = ReminderTime.minutes(hour: comp.hour ?? 9, minute: comp.minute ?? 0)
+                app.applySettings()
+            }
+        )
+    }
+
+    private var journalReminderBinding: Binding<Date> {
+        Binding(
+            get: {
+                let c = ReminderTime.components(fromMinutes: app.settings.journalReminderMinutes)
+                return Calendar.current.date(bySettingHour: c.hour, minute: c.minute, second: 0, of: Date()) ?? Date()
+            },
+            set: { newDate in
+                let comp = Calendar.current.dateComponents([.hour, .minute], from: newDate)
+                app.settings.journalReminderMinutes = ReminderTime.minutes(hour: comp.hour ?? 21, minute: comp.minute ?? 0)
                 app.applySettings()
             }
         )
