@@ -256,27 +256,19 @@ fileprivate struct JournalPromptField: View {
                     .foregroundStyle(tint)
             }
 
-            TextEditor(text: $text)
+            // Native multiline field: its built-in prompt is aligned with the
+            // cursor by construction (no hand-tuned placeholder overlay to drift).
+            TextField(placeholder, text: $text, axis: .vertical)
+                .textFieldStyle(.plain)
                 .font(.body)
-                .scrollContentBackground(.hidden)
-                .frame(minHeight: 60)
-                .padding(.horizontal, Theme.Spacing.xs)
-                .padding(.vertical, Theme.Spacing.xs - 2)
+                .lineLimit(3...8)
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, Theme.Spacing.xs)
                 .background(.background.opacity(0.55), in: RoundedRectangle(cornerRadius: Theme.Radius.sm))
                 .overlay(
                     RoundedRectangle(cornerRadius: Theme.Radius.sm)
                         .strokeBorder(tint.opacity(text.isEmpty ? 0.12 : 0.28))
                 )
-                .overlay(alignment: .topLeading) {
-                    if text.isEmpty {
-                        Text(placeholder)
-                            .font(.body)
-                            .foregroundStyle(.tertiary)
-                            .padding(.horizontal, Theme.Spacing.xs + 5)
-                            .padding(.vertical, Theme.Spacing.xs + 2)
-                            .allowsHitTesting(false)
-                    }
-                }
         }
     }
 }
