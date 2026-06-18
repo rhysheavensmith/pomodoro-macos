@@ -1,0 +1,57 @@
+name: PomodoroFocus
+options:
+  bundleIdPrefix: com.rhys
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Personal/local build: don't require a Developer Team to compile & run.
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "-"
+    SWIFT_STRICT_CONCURRENCY: minimal
+targets:
+  PomodoroFocus:
+    type: application
+    platform: macOS
+    sources:
+      - path: PomodoroFocus
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.rhys.PomodoroFocus
+        PRODUCT_NAME: PomodoroFocus
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: YES
+        # Menu-bar agent: lives in the menu bar, no Dock icon by default.
+        INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_CFBundleDisplayName: "Pomodoro Focus"
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Personal use"
+        ENABLE_HARDENED_RUNTIME: NO
+        ENABLE_USER_SCRIPT_SANDBOXING: YES
+        COMBINE_HIDPI_IMAGES: YES
+  PomodoroFocusTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: PomodoroFocusTests
+    dependencies:
+      - target: PomodoroFocus
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.rhys.PomodoroFocusTests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  PomodoroFocus:
+    build:
+      targets:
+        PomodoroFocus: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - PomodoroFocusTests

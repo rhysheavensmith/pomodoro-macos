@@ -1,0 +1,26 @@
+# Xcode / Swift
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+.build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# XcodeGen generates this from project.yml — regenerate with `xcodegen generate`.
+PomodoroFocus.xcodeproj/
+
+# macOS
+.DS_Store
+
+# SwiftPM
+Package.resolved
+
+# Misc
+*.swp
+*~
