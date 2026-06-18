@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// Centralized design tokens. Every surface (menu bar, focus shield, plan,
 /// dashboard) reads from here so the app stays visually consistent.
@@ -28,7 +29,10 @@ enum Theme {
         /// Warm canvas + ribbon tones for the "day in pomodoros" timeline.
         static let canvasWarm = Color(hex: 0xFFF6F2)
         static let canvasWarmDeep = Color(hex: 0x17110F)
-        static let ribbonWarm = Color(hex: 0xFBEAE1)
+        /// Break "paper" surface — warm cream in light, warm espresso in dark.
+        /// Must adapt: the label/control text on top is scheme-adaptive, so a
+        /// fixed-light fill would leave white-on-cream text invisible in dark.
+        static let ribbonWarm = Color(light: Color(hex: 0xFBEAE1), dark: Color(hex: 0x3A2A20))
         static let leaf = Color(hex: 0x16A34A)
 
         /// The semantic color for a given timer phase.
@@ -105,5 +109,16 @@ extension Color {
             blue: Double(hex & 0xFF) / 255.0,
             opacity: alpha
         )
+    }
+
+    /// A color that resolves to a different tone per appearance. There's no
+    /// asset catalog here (tokens are code-built), so we bridge through a
+    /// dynamic `NSColor` whose provider is re-asked whenever the appearance
+    /// flips — the code equivalent of a light/dark color set.
+    init(light: Color, dark: Color) {
+        self.init(nsColor: NSColor(name: nil) { appearance in
+            let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            return NSColor(isDark ? dark : light)
+        })
     }
 }
