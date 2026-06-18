@@ -50,6 +50,7 @@ final class AppModel {
         refreshDerived()
         notifications.schedulePlanReminder(atMinutesFromMidnight: settings.planReminderMinutes)
         updateStreakRiskNudge()
+        updateJournalReminder()
         Task { await notifications.requestAuthorization() }
     }
 
@@ -322,12 +323,21 @@ final class AppModel {
         }
     }
 
+    private func updateJournalReminder() {
+        if settings.journalReminderEnabled {
+            notifications.scheduleJournalReminder(atMinutesFromMidnight: settings.journalReminderMinutes)
+        } else {
+            notifications.cancelJournalReminder()
+        }
+    }
+
     /// Persist setting edits and re-apply anything time-sensitive (the daily
     /// plan reminder, the streak-risk nudge).
     func applySettings() {
         try? modelContext?.save()
         notifications.schedulePlanReminder(atMinutesFromMidnight: settings.planReminderMinutes)
         updateStreakRiskNudge()
+        updateJournalReminder()
     }
 
     func addToBlocklist(_ bundleID: String) {

@@ -19,6 +19,10 @@ final class AppSettings {
     var planReminderMinutes: Int
     /// Whether the evening "streak at risk" nudge is enabled.
     var streakRiskNudgeEnabled: Bool
+    /// Whether the evening "reflect on your day" journal reminder is enabled.
+    var journalReminderEnabled: Bool
+    /// Minutes from midnight for the journal reminder (1260 = 21:00).
+    var journalReminderMinutes: Int
 
     // MARK: Streak rules
     /// Minimum completed pomodoros for a day to "qualify" toward the streak.
@@ -45,6 +49,8 @@ final class AppSettings {
         self.dailyGoal = 8
         self.planReminderMinutes = 9 * 60
         self.streakRiskNudgeEnabled = true
+        self.journalReminderEnabled = true
+        self.journalReminderMinutes = 21 * 60
         self.streakBar = 1
         self.activeWeekdays = [1, 2, 3, 4, 5, 6, 7]
         self.blocklistBundleIDs = []

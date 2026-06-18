@@ -25,6 +25,8 @@ final class NotificationScheduler {
         static let planReminder = "com.pomodorofocus.notification.planReminder"
         /// Evening "your streak needs a pomodoro" nudge.
         static let streakRisk = "com.pomodorofocus.notification.streakRisk"
+        /// Evening "reflect on your day" journal reminder.
+        static let journalReminder = "com.pomodorofocus.notification.journalReminder"
         /// Per-focus-completion celebration. A timestamp suffix is appended so
         /// rapid completions never collide.
         static let focusCompletePrefix = "com.pomodorofocus.notification.focusComplete"
@@ -39,6 +41,7 @@ final class NotificationScheduler {
         static let focusComplete = "FOCUS_COMPLETE"
         static let breakOver = "BREAK_OVER"
         static let streakRisk = "STREAK_RISK"
+        static let journalReminder = "JOURNAL_REMINDER"
     }
 
     /// Action identifiers exposed on the categories above. Registered up front
@@ -182,6 +185,35 @@ final class NotificationScheduler {
         center.removeDeliveredNotifications(withIdentifiers: [Identifier.streakRisk])
     }
 
+    // MARK: - Journal reminder (daily, repeating)
+
+    /// Schedules a daily evening reminder to journal. Reuses the stable
+    /// `Identifier.journalReminder`, so re-scheduling (e.g. after a settings
+    /// change) replaces rather than stacks.
+    func scheduleJournalReminder(atMinutesFromMidnight minutes: Int) {
+        let content = makeContent(
+            title: "Reflect on your day",
+            body: "What went well, what got in the way, and tomorrow's focus.",
+            categoryIdentifier: Category.journalReminder
+        )
+        let trigger = UNCalendarNotificationTrigger(
+            dateMatching: dateComponents(fromMinutesPastMidnight: minutes),
+            repeats: true
+        )
+        let request = UNNotificationRequest(
+            identifier: Identifier.journalReminder,
+            content: content,
+            trigger: trigger
+        )
+        center.add(request)
+    }
+
+    /// Cancels the journal reminder (pending and delivered).
+    func cancelJournalReminder() {
+        center.removePendingNotificationRequests(withIdentifiers: [Identifier.journalReminder])
+        center.removeDeliveredNotifications(withIdentifiers: [Identifier.journalReminder])
+    }
+
     // MARK: - Bulk cancellation
 
     /// Removes every pending and delivered notification this app owns.
@@ -235,12 +267,19 @@ final class NotificationScheduler {
             intentIdentifiers: [],
             options: []
         )
+        let journalCategory = UNNotificationCategory(
+            identifier: Category.journalReminder,
+            actions: [],
+            intentIdentifiers: [],
+            options: []
+        )
 
         center.setNotificationCategories([
             planCategory,
             focusCompleteCategory,
             breakOverCategory,
             streakRiskCategory,
+            journalCategory,
         ])
     }
 
