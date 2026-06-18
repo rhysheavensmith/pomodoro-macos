@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Main window shell: the Plan and Dashboard tabs.
 struct RootWindowView: View {
-    enum Tab: Hashable { case plan, dashboard, settings }
+    enum Tab: Hashable { case plan, journal, dashboard, settings }
     @State private var selection: Tab = .plan
 
     var body: some View {
@@ -12,6 +12,10 @@ struct RootWindowView: View {
                 PlanView()
                     .tabItem { Label("Plan", systemImage: "checklist") }
                     .tag(Tab.plan)
+
+                JournalView()
+                    .tabItem { Label("Journal", systemImage: "book.closed") }
+                    .tag(Tab.journal)
 
                 DashboardView()
                     .tabItem { Label("Dashboard", systemImage: "chart.bar.xaxis") }
