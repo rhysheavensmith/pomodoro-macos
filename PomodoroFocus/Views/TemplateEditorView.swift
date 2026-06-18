@@ -20,25 +20,21 @@ struct TemplateEditorView: View {
             header
 
             List {
-                Section {
-                    ForEach($template) { $segment in
-                        row($segment)
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: Theme.Spacing.xs, leading: Theme.Spacing.lg,
-                                                      bottom: Theme.Spacing.xs, trailing: Theme.Spacing.lg))
-                    }
-                    .onDelete { template.remove(atOffsets: $0) }
-                    .onMove { template.move(fromOffsets: $0, toOffset: $1) }
-                } footer: {
-                    footer
-                        .listRowInsets(EdgeInsets(top: Theme.Spacing.sm, leading: Theme.Spacing.lg,
-                                                  bottom: Theme.Spacing.xl, trailing: Theme.Spacing.lg))
+                ForEach($template) { $segment in
+                    row($segment)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: Theme.Spacing.xs, leading: Theme.Spacing.lg,
+                                                  bottom: Theme.Spacing.xs, trailing: Theme.Spacing.lg))
                 }
+                .onDelete { template.remove(atOffsets: $0) }
+                .onMove { template.move(fromOffsets: $0, toOffset: $1) }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .environment(\.defaultMinListRowHeight, 0)
+
+            footerBar
         }
         .frame(width: 480, height: 600)
         .warmCanvas()
@@ -66,7 +62,7 @@ struct TemplateEditorView: View {
 
     // MARK: Footer (add / reset / hint)
 
-    private var footer: some View {
+    private var footerBar: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             HStack(spacing: Theme.Spacing.sm) {
                 Button { withAnimation(Theme.Motion.quick) { template.append(.focus(4)) } } label: {
@@ -78,21 +74,28 @@ struct TemplateEditorView: View {
                     Label("Break", systemImage: "plus")
                 }
                 .buttonStyle(SoftPillButtonStyle(tint: Theme.Palette.breakColor))
-                Spacer()
-            }
 
-            Button(role: .destructive) {
-                withAnimation(Theme.Motion.quick) { template = TemplateStore.defaultSegments }
-            } label: {
-                Label("Reset to default rhythm", systemImage: "arrow.counterclockwise").font(.subheadline)
+                Spacer()
+
+                Button(role: .destructive) {
+                    withAnimation(Theme.Motion.quick) { template = TemplateStore.defaultSegments }
+                } label: {
+                    Label("Reset", systemImage: "arrow.counterclockwise")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .font(.subheadline)
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
 
             Text("Tasks flow into the focus tomatoes in order; breaks fall where you place them. Drag to reorder, swipe to delete.")
                 .font(.caption).foregroundStyle(.secondary)
-                .padding(.top, Theme.Spacing.xxs)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .padding(.horizontal, Theme.Spacing.lg)
+        .padding(.top, Theme.Spacing.md)
+        .padding(.bottom, Theme.Spacing.lg)
+        .overlay(alignment: .top) { Divider().opacity(0.4) }
     }
 
     // MARK: Rows
